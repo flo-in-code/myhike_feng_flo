@@ -31,6 +31,7 @@ function initAuthUI() {
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
     const redirectUrl = 'main.html';
+    // if the user was authenticated, user goes to main.html
 
     // --- Helper Functions ---
     // Toggle element visibility
