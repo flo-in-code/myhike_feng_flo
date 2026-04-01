@@ -1,7 +1,7 @@
 // Import specific functions from the Firebase Auth SDK
-import {onAuthStateChanged} from "firebase/auth";     //Detect login state
-import { auth } from '/src/firebaseConfig.js';        //Firebase authentication connection
-import { logoutUser } from '/src/authentication.js';  //Perform logout action
+import { onAuthStateChanged } from "firebase/auth"; //Detect login state
+import { auth } from "/src/firebaseConfig.js"; //Firebase authentication connection
+import { logoutUser } from "/src/authentication.js"; //Perform logout action
 
 class SiteNavbar extends HTMLElement {
     constructor() {
@@ -26,7 +26,7 @@ class SiteNavbar extends HTMLElement {
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav me-auto">
                             <li class="nav-item">
-                                <a class="nav-link" href="/">Home</a>
+                                <a class="nav-link" href="main.html">Home</a>
                             </li>
                         </ul>
                         <div class="d-flex align-items-center gap-2 ms-lg-2" id="rightControls">
@@ -45,26 +45,52 @@ class SiteNavbar extends HTMLElement {
         `;
     }
 
-       renderAuthControls() {
-        const authControls = this.querySelector('#authControls');
+    // -------------------------------------------------------------
+    // Renders the authentication controls (login/logout) based on user state
+    // Uses Firebase Auth's onAuthStateChanged to listen for changes
+    // and updates the navbar accordingly.
+    // Also adds a "Profile" link when the user is logged in.
+    // This keeps the navbar in sync with the user's authentication status.
+    // -------------------------------------------------------------
+    renderAuthControls() {
+        const authControls = this.querySelector("#authControls");
+        const navList = this.querySelector("ul"); // your main nav <ul>
 
-        // Initialize with invisible placeholder to maintain layout space
+        // invisible placeholder to maintain layout
         authControls.innerHTML = `<div class="btn btn-outline-light" style="visibility: hidden; min-width: 80px;">Log out</div>`;
 
         onAuthStateChanged(auth, (user) => {
             let updatedAuthControl;
+
+            // Remove existing "Profile" link if present (avoid duplicates)
+            const existingProfile = navList?.querySelector("#profileLink");
+            if (existingProfile) existingProfile.remove();
+
             if (user) {
+                // 1️⃣ Add Profile item to menu
+                if (navList) {
+                    const profileItem = document.createElement("li");
+                    profileItem.classList.add("nav-item");
+                    profileItem.innerHTML = `<a class="nav-link" id="profileLink" href="/profile.html">Profile</a>`;
+                    navList.appendChild(profileItem);
+                }
+
+                // 2️⃣ Show logout button
                 updatedAuthControl = `<button class="btn btn-outline-light" id="signOutBtn" type="button" style="min-width: 80px;">Log out</button>`;
                 authControls.innerHTML = updatedAuthControl;
-                const signOutBtn = authControls.querySelector('#signOutBtn');
-                signOutBtn?.addEventListener('click', logoutUser);
+
+                const signOutBtn = authControls.querySelector("#signOutBtn");
+                signOutBtn?.addEventListener("click", logoutUser);
             } else {
+                // Remove Profile if user logs out
+                if (existingProfile) existingProfile.remove();
+
+                // Show login button
                 updatedAuthControl = `<a class="btn btn-outline-light" id="loginBtn" href="/login.html" style="min-width: 80px;">Log in</a>`;
                 authControls.innerHTML = updatedAuthControl;
             }
         });
     }
-
 }
 
-customElements.define('site-navbar', SiteNavbar);
+customElements.define("site-navbar", SiteNavbar);
